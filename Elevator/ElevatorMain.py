@@ -117,7 +117,7 @@ class Elevator:
             if(Elevator.getDoorsOpened() == True):
                 self.closeElevatorDoor()
                 
-                #Update the text on the tkinter canvas to showcase accurate elevator information
+                #Update the text on the Tkinter canvas to showcase accurate elevator information
                 canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
                 root.update()
                 
@@ -134,7 +134,7 @@ class Elevator:
         if(Elevator.getDoorsOpened() == False):
            self.openElevatorDoor()
            
-           #Update the text on the tkinter canvas to showcase accurate elevator information
+           #Update the text on the Tkinter canvas to showcase accurate elevator information
            canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
            canvas.itemconfig(elevatorFloor,text=(f"Elevator Floor: {Elevator.getFloor()}"))
            root.update()
@@ -175,20 +175,20 @@ class Elevator:
         if(floorDifference < 0):
             Elevator.setDirection("Up")
          
-            #Update the text on the tkinter canvas to showcase accurate elevator information
+            #Update the text on the Tkinter canvas to showcase accurate elevator information
             canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
             
         elif(floorDifference > 0):
             
             Elevator.setDirection("Down")
             
-            #Update the text on the tkinter canvas to showcase accurate elevator information
+            #Update the text on the Tkinter canvas to showcase accurate elevator information
             canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
             
         else:
             Elevator.setDirection("None")
             
-            #Update the text on the tkinter canvas to showcase accurate elevator information
+            #Update the text on the Tkinter canvas to showcase accurate elevator information
             canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
 
     #Function to simulate opening the elevator door
@@ -211,7 +211,7 @@ class Elevator:
         Elevator.setDoorsOpened(True)
         Elevator.setMoving(False)
         
-        #Update the text on the tkinter canvas to showcase accurate elevator information
+        #Update the text on the Tkinter canvas to showcase accurate elevator information
         canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
         
     #Function to simulate closing the elevator door
@@ -234,7 +234,7 @@ class Elevator:
         Elevator.setDoorsOpened(False)
         Elevator.setMoving(True)
         
-        #Update the text on the tkinter canvas to showcase accurate elevator information
+        #Update the text on the Tkinter canvas to showcase accurate elevator information
         canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
         
                 
@@ -255,7 +255,7 @@ def buttonPress(event):
     #Adds the floor that was pressed to the Elevator's internal floor queue
     Elevator.addToQueue(floorValue)
     
-    #Update the text on the tkinter canvas to showcase accurate elevator information
+    #Update the text on the Tkinter canvas to showcase accurate elevator information
     canvas.itemconfig(elevatorQueue,text=(f"Elevator Queue: {list(Elevator.getQueue())}"))
     
   
@@ -288,7 +288,7 @@ def elevatorTick():
         Elevator.move(Elevator.popFromQueue())
         
     # Schedule this function to run again after 100 ms
-    #Updaate the canvas to reflect the queue that has just been changed
+    #Update the canvas to reflect the queue that has just been changed
     canvas.itemconfig(elevatorQueue,text=(f"Elevator Queue: {list(Elevator.getQueue())}"))
     root.after(1000, elevatorTick)
     
@@ -302,7 +302,6 @@ def createBuilding(canvas):
     elevator_x1 = 700
     elevator_x2 = 800
     floor0_bottom_y = 900  # bottom of floor 0 (aligns with your elevator base)
-    floor0_top_y = floor0_bottom_y - floor_height  # top of floor 0
     building_left = 650
     building_right = 850
     
@@ -322,8 +321,8 @@ def createBuilding(canvas):
         canvas.create_text(620, y, text=str(i), font=("Arial", 14))
         
 
-#Create the tkinter interface
 
+#Create the Tkinter interface
 #Create the canvas
 root = tk.Tk()
 root.title("Elevator interface")
