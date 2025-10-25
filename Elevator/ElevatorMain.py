@@ -94,101 +94,148 @@ class Elevator:
     def sortQueueHighLow(self):
         self.queue = deque(sorted(self.queue, reverse=True))
         
-#Functions to move the elevator internally
-def move(floorNumber):
-    
-    
-    #Calculate the distance between this floor and the floor the elevator needs to move to 
-    floorDifference = Elevator.getFloor() - floorNumber
-    numSteps = 200
-    floorDistance =  150 * floorDifference
-    stepDistance = floorDistance/numSteps
-    
-    #Get the direction that the elevator is moving in, and update the elevator's internal status
-    getElevatorDirection(floorNumber)
-    
-    #Check if the elevator needs to change floors
-    #If the elevator needs to change floors, check if the doors are opened
-    if(floorDifference != 0):
+    #Functions to move the elevator internally
+    def move(self, floorNumber):
         
-        #If the elevator doors are opened, close them because the elevator needs to move
-        if(Elevator.getDoorsOpened() == True):
-            closeElevatorDoor()
+        
+        #Calculate the distance between this floor and the floor the elevator needs to move to 
+        floorDifference = Elevator.getFloor() - floorNumber
+        numSteps = 200
+        floorDistance =  150 * floorDifference
+        stepDistance = floorDistance/numSteps
+        
+        #Get the direction that the elevator is moving in, and update the elevator's internal status
+        self.getElevatorDirection(floorNumber)
+        
+        #Check if the elevator needs to change floors
+        #If the elevator needs to change floors, check if the doors are opened
+        if(floorDifference != 0):
+            
+            #If the elevator doors are opened, close them because the elevator needs to move
+            if(Elevator.getDoorsOpened() == True):
+                self.closeElevatorDoor()
+                
+                #Update the text on the tkinter canvas to showcase accurate elevator information
+                canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
+                root.update()
+                
+        #For each step, move the elevator by an amount of totalDistance/numberOfSteps
+        for i in range(numSteps):
+            moveDistance(stepDistance)
+            root.update()
+            root.after(10)
+            
+        #Update the floor number that the elevator is on
+        Elevator.setFloor(floorNumber)
+        
+        #Now that we are on a new floor, check if the doors are opened (they should not be), then open the door
+        if(Elevator.getDoorsOpened() == False):
+           self.openElevatorDoor()
+           
+           #Update the text on the tkinter canvas to showcase accurate elevator information
+           canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
+           canvas.itemconfig(elevatorFloor,text=(f"Elevator Floor: {Elevator.getFloor()}"))
+           root.update()
+
+    #Function that optimizes the elevators next stops, meant to run after each button press
+    def elevatorOptimizer(self, floorNumber):
+        
+        #Calculate the distance between this floor and the floor the elevator needs to move to 
+        floorDifference = Elevator.getFloor() - floorNumber
+        
+        #Check if the elevator is moving up or down
+        #IF the elevator is moving down, then sort the queue so that it can stop at the higher floors as it goes down
+        #If the elevator is going up, then sort the queue so that it can stop at the lower levels as it goes up
+        if(floorDifference < 0):
+            
+            Elevator.sortQueueLowHigh()
+            
+        elif(floorDifference > 0):
+            
+            Elevator.sortQueueHighLow()
+            
+        else:
+            Elevator.setDirection("None")
+            
+            
+        canvas.itemconfig(elevatorQueue,text=(f"Elevator Queue: {list(Elevator.getQueue())}"))
+    
+    #Function to get the elevators direction 
+    def getElevatorDirection(self, floorNumber):
+        
+        #Calculate the distance between this floor and the floor the elevator needs to move to 
+        floorDifference = Elevator.getFloor() - floorNumber
+        
+        #Check if the elevator is moving up or down
+        #IF the elevator is moving down, then sort the queue so that it can stop at the higher floors as it goes down
+        #If the elevator is going up, then sort the queue so that it can stop at the lower levels as it goes up
+        if(floorDifference < 0):
+            
+            Elevator.setDirection("Up")
+         
+            #Update the text on the tkinter canvas to showcase accurate elevator information
+            canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
+            
+        elif(floorDifference > 0):
+            
+            Elevator.setDirection("Down")
             
             #Update the text on the tkinter canvas to showcase accurate elevator information
-            canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
-            root.update()
+            canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
             
-    #For each step, move the elevator by an amount of totalDistance/numberOfSteps
-    for i in range(numSteps):
-        moveDistance(stepDistance)
-        root.update()
-        root.after(10)
-        
-    #Update the floor number that the elevator is on
-    Elevator.setFloor(floorNumber)
-    
-    #Now that we are on a new floor, check if the doors are opened (they should not be), then open the door
-    if(Elevator.getDoorsOpened() == False):
-       openElevatorDoor()
-       
-       #Update the text on the tkinter canvas to showcase accurate elevator information
-       canvas.itemconfig(elevatorStatus,text="Moving: Yes" if Elevator.getMoving() else "Moving: No")
-       canvas.itemconfig(elevatorFloor,text=(f"Elevator Floor: {Elevator.getFloor()}"))
-       root.update()
+        else:
+            Elevator.setDirection("None")
+            
+            #Update the text on the tkinter canvas to showcase accurate elevator information
+            canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
 
-#Function that optimizes the elevators next stops, meant to run after each button press
-def elevatorOptimizer(floorNumber):
-    
-    #Calculate the distance between this floor and the floor the elevator needs to move to 
-    floorDifference = Elevator.getFloor() - floorNumber
-    
-    #Check if the elevator is moving up or down
-    #IF the elevator is moving down, then sort the queue so that it can stop at the higher floors as it goes down
-    #If the elevator is going up, then sort the queue so that it can stop at the lower levels as it goes up
-    if(floorDifference < 0):
+    #Function to simulate opening the elevator door
+    def openElevatorDoor(self):
         
-        Elevator.sortQueueLowHigh()
+        #The number of pixels the elevator should open to either side
+        difference = 30
         
-    elif(floorDifference > 0):
+        #The number of increments the elevator door should take to reach the final pixel width
+        numsteps = 20
+        distanceStep = difference/numsteps
         
-        Elevator.sortQueueHighLow()
-        
-    else:
-        Elevator.setDirection("None")
-        
-        
-    canvas.itemconfig(elevatorQueue,text=(f"Elevator Queue: {list(Elevator.getQueue())}"))
-    
-#Function to get the elevators direction 
-def getElevatorDirection(floorNumber):
-    
-    #Calculate the distance between this floor and the floor the elevator needs to move to 
-    floorDifference = Elevator.getFloor() - floorNumber
-    
-    #Check if the elevator is moving up or down
-    #IF the elevator is moving down, then sort the queue so that it can stop at the higher floors as it goes down
-    #If the elevator is going up, then sort the queue so that it can stop at the lower levels as it goes up
-    if(floorDifference < 0):
-        
-        Elevator.setDirection("Up")
-     
-        #Update the text on the tkinter canvas to showcase accurate elevator information
-        canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
-        
-    elif(floorDifference > 0):
-        
-        Elevator.setDirection("Down")
+        #For each step, open the elevator doors by the step increment amount
+        for i in range(numsteps):
+            openElevatorDoorHelper(distanceStep)
+            root.update()
+            root.after(30)
+            
+        #Update the elevator flags to reflect a stopped elevator with open doors
+        Elevator.setDoorsOpened(True)
+        Elevator.setMoving(False)
         
         #Update the text on the tkinter canvas to showcase accurate elevator information
-        canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
+        canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
         
-    else:
-        Elevator.setDirection("None")
+    #Function to simulate closing the elevator door
+    def closeElevatorDoor(self):
+        
+        #The number of pixels the elevator should close from either side
+        difference = 30
+        
+         #The number of increments the elevator door should take to reach the final pixel width
+        numsteps = 20
+        distanceStep = difference/numsteps
+        
+         #For each step, close the elevator doors by the step increment amount
+        for i in range(numsteps):
+            closeElevatorDoorHelper(distanceStep)
+            root.update()
+            root.after(30)
+            
+        #Update the elevator flags to reflect a stopped elevator with open doors
+        Elevator.setDoorsOpened(False)
+        Elevator.setMoving(True)
         
         #Update the text on the tkinter canvas to showcase accurate elevator information
-        canvas.itemconfig(elevatorDirection,text="Direction: Up" if Elevator.isGoingUp() else "Direction: Down" if Elevator.isGoingDown() else "Direction: None")
+        canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
         
+                
 #Helper function to move the elevator a certain distance (to make the animation look smoother)
 def moveDistance(distance):
     canvas.move(elevator,0, distance)
@@ -210,52 +257,7 @@ def buttonPress(event):
     canvas.itemconfig(elevatorQueue,text=(f"Elevator Queue: {list(Elevator.getQueue())}"))
     
   
-#Function to simulate opening the elevator door
-def openElevatorDoor():
-    
-    #The number of pixels the elevator should open to either side
-    difference = 30
-    
-    #The number of increments the elevator door should take to reach the final pixel width
-    numsteps = 20
-    distanceStep = difference/numsteps
-    
-    #For each step, open the elevator doors by the step increment amount
-    for i in range(numsteps):
-        openElevatorDoorHelper(distanceStep)
-        root.update()
-        root.after(30)
-        
-    #Update the elevator flags to reflect a stopped elevator with open doors
-    Elevator.setDoorsOpened(True)
-    Elevator.setMoving(False)
-    
-    #Update the text on the tkinter canvas to showcase accurate elevator information
-    canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
-    
-#Function to simulate closing the elevator door
-def closeElevatorDoor():
-    
-    #The number of pixels the elevator should close from either side
-    difference = 30
-    
-     #The number of increments the elevator door should take to reach the final pixel width
-    numsteps = 20
-    distanceStep = difference/numsteps
-    
-     #For each step, close the elevator doors by the step increment amount
-    for i in range(numsteps):
-        closeElevatorDoorHelper(distanceStep)
-        root.update()
-        root.after(30)
-        
-    #Update the elevator flags to reflect a stopped elevator with open doors
-    Elevator.setDoorsOpened(False)
-    Elevator.setMoving(True)
-    
-    #Update the text on the tkinter canvas to showcase accurate elevator information
-    canvas.itemconfig(elevatorDoors,text="Doors: Open" if Elevator.getDoorsOpened() else "Doors: Closed")
-    
+
 #Helper function to make the opening of the elevator door smoother
 def openElevatorDoorHelper(openStepDistance):
 
@@ -278,10 +280,10 @@ def elevatorTick():
     if (Elevator.getMoving() == False and Elevator.queueIsEmpty() == False):
         
         #Optimize the elevator based on the direction that its moving before the elevator moves
-        elevatorOptimizer(Elevator.peekQueue())
+        Elevator.elevatorOptimizer(Elevator.peekQueue())
         
         #Remove the floor from the queue and start moving to that floor
-        move(Elevator.popFromQueue())
+        Elevator.move(Elevator.popFromQueue())
         
     # Schedule this function to run again after 100 ms
     #Updaate the canvas to reflect the queue that has just been changed
@@ -347,7 +349,7 @@ elevatorQueue = canvas.create_text(10,130, text=(f"Elevator Queue: {list(Elevato
 
 #Main Elevator environment 
 #Open the elevator door to start
-openElevatorDoor()
+Elevator.openElevatorDoor()
 elevatorTick()
 
 #Create the control buttons
