@@ -94,7 +94,9 @@ class Elevator:
     def sortQueueHighLow(self):
         self.queue = deque(sorted(self.queue, reverse=True))
         
-    #Functions to move the elevator internally
+    #Function to move the elevator to a specific floor and perform state tracking
+    #Only moving the elevator if the state permits
+    #Function utilizes various helper functions to smoothen out the elevator's animations
     def move(self, floorNumber):
         
         
@@ -137,7 +139,8 @@ class Elevator:
            canvas.itemconfig(elevatorFloor,text=(f"Elevator Floor: {Elevator.getFloor()}"))
            root.update()
 
-    #Function that optimizes the elevators next stops, meant to run after each button press
+    #Function that optimizes the elevators next stops, meant to run after each Tkinter tick
+    #Looks at direction elevator is moving to make a decision on how to sort floors
     def elevatorOptimizer(self, floorNumber):
         
         #Calculate the distance between this floor and the floor the elevator needs to move to 
@@ -167,9 +170,8 @@ class Elevator:
         floorDifference = Elevator.getFloor() - floorNumber
         
         #Check if the elevator is moving up or down
-        #IF the elevator is moving down, then sort the queue so that it can stop at the higher floors as it goes down
-        #If the elevator is going up, then sort the queue so that it can stop at the lower levels as it goes up
-        if(floorDifference < 0):
+        #IF the elevator is moving down, set the state of the elevator as moving down
+        #If the elevator is going up, set the state of the elevator as moving up
             
             Elevator.setDirection("Up")
          
