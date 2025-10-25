@@ -172,7 +172,7 @@ class Elevator:
         #Check if the elevator is moving up or down
         #IF the elevator is moving down, set the state of the elevator as moving down
         #If the elevator is going up, set the state of the elevator as moving up
-            
+        if(floorDifference < 0):
             Elevator.setDirection("Up")
          
             #Update the text on the tkinter canvas to showcase accurate elevator information
